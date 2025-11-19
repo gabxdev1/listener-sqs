@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: listener-sqs
+  threads:
+    virtual:
+      enabled: true
+sqs:
+  queue-url: "https://sqs.sa-east-1.amazonaws.com/463056911103/sqs-test"
