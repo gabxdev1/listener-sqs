@@ -5,4 +5,4 @@ spring:
     virtual:
       enabled: true
 sqs:
-  queue-url: "https://sqs.sa-east-1.amazonaws.com/463056911103/sqs-test"
+  queue-url: "https://sqs.sa-east-1.amazonaws.com//sqs-test"

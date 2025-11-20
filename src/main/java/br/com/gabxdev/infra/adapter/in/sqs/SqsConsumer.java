@@ -9,6 +9,11 @@ import software.amazon.awssdk.services.sqs.model.Message;
 public class SqsConsumer {
 
     public void consume(Message message) {
-        log.info("Consumido com sucesso. body={}", message.body());
+        var event = message.body();
+        log.info("Consumido com sucesso. body={}", event);
+
+        if (event.contains("20")) {
+            throw new RuntimeException("Forçando error test");
+        }
     }
 }

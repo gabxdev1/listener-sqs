@@ -1,9 +1,11 @@
 package br.com.gabxdev.infra.adapter.in.sqs;
 
+import datadog.trace.api.Trace;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -187,15 +189,35 @@ public class SqsListener {
     }
 
     private ProcessResult processMessage(Message message) {
+        var correlationId = extractCorrelationId(message);
+
         try {
-            consumer.consume(message);
+            MDC.put("correlation_id", correlationId);
+            org.jboss.logging.MDC.put("correlation_id", correlationId);
+
+            doProcessMessage(message);
 
             return ProcessResult.success();
         } catch (Exception e) {
-            log.error("Erro ao processar mensagem. body={}", message.body(), e);
+            log.error("Erro ao processar mensagens do SQS", e);
 
             return ProcessResult.failure(e);
+        } finally {
+
+            MDC.remove("correlation_id");
+            org.jboss.logging.MDC.remove("correlation_id");
         }
+    }
+
+    @Trace(
+            operationName = "sqs.consume",
+            resourceName = "processar-evento-sqs",
+            measured = true
+    )
+    private void doProcessMessage(Message message) {
+        log.info("Iniciando processamento da mensagem SQS. correlation_id={}", MDC.get("correlation_id"));
+
+        consumer.consume(message);
     }
 
     private void deleteBatch(List<Message> messages) {
@@ -236,5 +258,16 @@ public class SqsListener {
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private String extractCorrelationId(Message message) {
+        if (message.messageAttributes() != null &&
+            message.messageAttributes().containsKey("correlation_id")) {
+            return message.messageAttributes()
+                    .get("correlation_id")
+                    .stringValue();
+        }
+        // fallback: se não vier, gera um novo ou retorna null
+        return UUID.randomUUID().toString();
     }
 }
