@@ -46,7 +46,6 @@ public class SqsListener {
 
     public synchronized void recriarPollerLoop(int desiredNumPollers) {
         if (desiredNumPollers <= 0 || desiredNumPollers > 5) {
-            log.warn("Valor desejado de pollers ({}) é inválido. Ignorando.", desiredNumPollers);
             return;
         }
 

@@ -57,7 +57,6 @@ public class SqsPollerWorker implements Runnable {
                 SleepUtils.sleep(1000);
             }
         }
-        System.out.println(running);
         log.info("Poller SQS finalizado: {}", name);
     }
 }
