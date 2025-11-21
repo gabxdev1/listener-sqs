@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/sqs-listener")
-@Slf4j
 public class SqsListenerAdminController implements PollerConfigPort {
 
     private int desiredNumPollers = 0;
