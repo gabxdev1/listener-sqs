@@ -1,6 +1,7 @@
 package br.com.gabxdev.infra.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import br.com.gabxdev.infra.properties.SqsListenerProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -13,10 +14,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
+@RequiredArgsConstructor
 public class SqsConfig {
-
-    @Value("${sqs.queue-url}")
-    private String queueUrl;
 
     @Bean
     public SqsClient sqsClient() {
@@ -32,12 +31,7 @@ public class SqsConfig {
                 .build();
     }
 
-    @Bean
-    public String sqsQueueUrl() {
-        return queueUrl;
-    }
-
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     public ExecutorService messageExecutor() {
         return Executors.newVirtualThreadPerTaskExecutor();
     }

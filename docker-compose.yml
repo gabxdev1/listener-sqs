@@ -1,7 +1,7 @@
 services:
 
   api:
-    image: gabxdevv/listener-sqs:0.0.7
+    image: gabxdevv/listener-sqs:0.0.8
     environment:
       - JAVA_TOOL_OPTIONS=-javaagent:/app/dd-java-agent.jar
       - DD_AGENT_HOST=host.docker.internal

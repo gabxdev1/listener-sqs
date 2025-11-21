@@ -4,5 +4,17 @@ spring:
   threads:
     virtual:
       enabled: true
-sqs:
+
+sqs-contrato:
   queue-url: "https://sqs.sa-east-1.amazonaws.com//sqs-test"
+  max-messages-per-poll: 10
+  wait-time-seconds: 20
+  visibility-timeout-seconds: 80
+  defaultNumPollers: 2
+
+brasil-api:
+  base-url: https://brasilapi.com.br/api/cep/v2
+  connect-timeout-ms: 1000
+  read-timeout-ms: 2000
+  max-conn-total: 256
+  max-conn-per-route: 256
