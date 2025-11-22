@@ -10,20 +10,20 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static br.com.gabxdev.infra.utils.SleepUtils.sleep;
+
 @Slf4j
 public class SqsPollerWorker implements Runnable {
 
     private final SqsClient sqsClient;
     private final SqsListenerProperties props;
     private final SqsBatchProcessor batchProcessor;
-    private final AtomicBoolean running;
     private final String name;
 
-    public SqsPollerWorker(SqsClient sqsClient, SqsListenerProperties props, SqsBatchProcessor batchProcessor, AtomicBoolean running, String name) {
+    public SqsPollerWorker(SqsClient sqsClient, SqsListenerProperties props, SqsBatchProcessor batchProcessor, String name) {
         this.sqsClient = sqsClient;
         this.props = props;
         this.batchProcessor = batchProcessor;
-        this.running = running;
         this.name = name;
     }
 
@@ -31,8 +31,11 @@ public class SqsPollerWorker implements Runnable {
     public void run() {
         log.info("Poller SQS iniciado: {}", name);
 
-        while (running.get() && !Thread.currentThread().isInterrupted()) {
+        while (props.isRunning() && !Thread.currentThread().isInterrupted()) {
             try {
+                log.info("MAX MESSAGES: {}", props.getMaxMessagesPerPoll());
+                log.info("BACK OFF: {}", props.getBackOff());
+
                 var request = ReceiveMessageRequest.builder()
                         .queueUrl(props.getQueueUrl())
                         .maxNumberOfMessages(props.getMaxMessagesPerPoll())
@@ -48,13 +51,12 @@ public class SqsPollerWorker implements Runnable {
                 }
 
                 batchProcessor.processBatch(messages);
-
             } catch (SdkException e) {
                 log.error("Erro AWS ao receber mensagens do SQS", e);
-                SleepUtils.sleep(1000);
+                sleep(1000);
             } catch (Exception e) {
                 log.error("Erro inesperado no pollLoop do SQS", e);
-                SleepUtils.sleep(1000);
+                sleep(1000);
             }
         }
         log.info("Poller SQS finalizado: {}", name);

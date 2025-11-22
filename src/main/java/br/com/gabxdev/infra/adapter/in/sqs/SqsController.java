@@ -3,9 +3,9 @@ package br.com.gabxdev.infra.adapter.in.sqs;
 import br.com.gabxdev.domain.ports.in.ContratoUseCase;
 import br.com.gabxdev.infra.dto.ContratoEventConsumer;
 import br.com.gabxdev.infra.utils.JsonUtils;
+import br.com.gabxdev.infra.utils.LogUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sqs.model.Message;
 
@@ -18,14 +18,15 @@ public class SqsController {
 
     private final ContratoUseCase service;
 
+    private final LogUtils logUtils;
+
     public void consume(Message message) {
-        log.info("Iniciando processamento da mensagem SQS. correlation_id={}", MDC.get("correlation_id"));
+        log.info("{}", logUtils.logger("INICIO_PROCESSAMENTO_SQS", "Iniciamendo processamento do evento"));
 
         var contratoRequest = jsonUtils.toObject(message.body(), ContratoEventConsumer.class);
 
         service.createContrato(contratoRequest);
 
-        log.info("Processamento da mensagem SQS finalizado com sucesso. correlation_id={}", MDC.get("correlation_id"));
-
+        log.info("{}", logUtils.logger("FINAL_PROCESSAMENTO_SQS", "Evento processado com sucesso"));
     }
 }

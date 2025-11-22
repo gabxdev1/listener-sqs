@@ -1,8 +1,7 @@
 package br.com.gabxdev.infra.sqs.listener;
 
-import br.com.gabxdev.infra.properties.SqsListenerProperties;
 import br.com.gabxdev.domain.ports.SqsBatchProcessor;
-import br.com.gabxdev.infra.utils.SleepUtils;
+import br.com.gabxdev.infra.properties.SqsListenerProperties;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,8 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import static br.com.gabxdev.infra.utils.SleepUtils.sleep;
 
 @Component
 @RequiredArgsConstructor
@@ -23,47 +23,56 @@ public class SqsListener {
     private final SqsClient sqsClient;
     private final SqsBatchProcessor batchProcessor;
 
-    private final AtomicBoolean running = new AtomicBoolean(true);
-    private volatile int numPollers;
-
     private final List<Thread> pollerThreads = new CopyOnWriteArrayList<>();
 
     @PostConstruct
     public void start() {
-        this.numPollers = props.getDefaultNumPollers();
+        log.info("Iniciando listener de SQS na fila {} com {} pollers (startup)", props.getQueueUrl(), props.getNumPollers());
 
-        log.info("Iniciando listener de SQS na fila {} com {} pollers (startup)", props.getQueueUrl(), numPollers);
-
-        startPollers(numPollers);
+        startPollers(props.getNumPollers());
     }
 
     @PreDestroy
     public void shutdown() {
-        running.set(false);
-        SleepUtils.sleep(500);
+        props.setRunning(false);
+        sleep(500);
         stopPollerThreads();
     }
 
-    public synchronized void recriarPollerLoop(int desiredNumPollers) {
-        if (desiredNumPollers <= 0 || desiredNumPollers > 5) {
-            return;
+    public synchronized void listenerConfigUpdate(int maxMessagesPerPoll,
+                                                  int desiredNumPollers,
+                                                  int backOff) {
+        if (props.getMaxMessagesPerPoll() != maxMessagesPerPoll) {
+            if (maxMessagesPerPoll >= 1 && maxMessagesPerPoll <= 10) {
+                log.info("Decteada mudança na configuração de maxMessagesPerPoll: {} -> {}", props.getMaxMessagesPerPoll(), maxMessagesPerPoll);
+
+                props.setMaxMessagesPerPoll(maxMessagesPerPoll);
+            }
         }
 
-        if (this.numPollers == desiredNumPollers) {
-            return;
+        if (props.getBackOff() != backOff) {
+            if (backOff >= 0) {
+                log.info("Decteada mudança na configuração de backOff: {} -> {}", props.getBackOff(), backOff);
+
+                props.setBackOff(backOff);
+            }
         }
 
-        log.info("Detectada mudança na configuração de pollers: {} -> {}", this.numPollers, desiredNumPollers);
+        if (props.getNumPollers() != desiredNumPollers) {
+            if (desiredNumPollers >= 1 && desiredNumPollers <= 5) {
+                log.info("Detectada mudança na configuração de pollers: {} -> {}", props.getNumPollers(), desiredNumPollers);
 
-        updatePollerCount(desiredNumPollers);
+                updatePollerCount(desiredNumPollers);
+            }
+        }
     }
 
     private void updatePollerCount(int newNumPollers) {
-        running.set(false);
-        SleepUtils.sleep(15_000);
-        this.numPollers = newNumPollers;
+        props.setRunning(false);
+        props.setNumPollers(newNumPollers);
+        sleep(15_000);
         stopPollerThreads();
-        running.set(true);
+        props.setRunning(true);
         startPollers(newNumPollers);
     }
 
@@ -75,7 +84,6 @@ public class SqsListener {
                     sqsClient,
                     props,
                     batchProcessor,
-                    running,
                     name
             );
 

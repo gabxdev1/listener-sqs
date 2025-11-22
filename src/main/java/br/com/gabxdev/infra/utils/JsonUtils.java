@@ -18,4 +18,12 @@ public class JsonUtils {
             throw new RuntimeException(e);
         }
     }
+
+    public String toJson(LogPattern log) {
+        try {
+            return objectMapper.writeValueAsString(log);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

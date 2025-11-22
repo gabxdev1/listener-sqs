@@ -12,5 +12,7 @@ public class SqsListenerProperties {
     private int maxMessagesPerPoll = 10;
     private int waitTimeSeconds = 20;
     private int visibilityTimeoutSeconds = 80;
-    private int defaultNumPollers = 3;
+    private int numPollers = 3;
+    private volatile boolean running = true;
+    private int backOff = 0;
 }

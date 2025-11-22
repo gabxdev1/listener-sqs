@@ -8,34 +8,54 @@
             <providers>
 
                 <!-- timestamp -->
+                <!-- timestamp -->
                 <timestamp>
                     <timeZone>UTC</timeZone>
                 </timestamp>
 
-                <!-- nível, logger, thread -->
-                <pattern>
-                    <pattern>
-                        {
-                        "level": "%level",
-                        "logger": "%logger",
-                        "thread": "%thread"
-                        }
-                    </pattern>
-                </pattern>
-
-                <!-- mensagem -->
-                <message/>
-
-                <!-- MDC (inclui correlation_id e também dd.trace_id/span_id se o agent preencher) -->
-                <mdc/>
-
-                <!-- nome da aplicação -->
                 <pattern>
                     <pattern>
                         { "service": "${APP_NAME}" }
                     </pattern>
                 </pattern>
 
+                <pattern>
+                    <pattern>
+                        { "message": "#tryJson{%message}" }
+                    </pattern>
+                </pattern>
+
+                <pattern>
+                    <pattern>
+                        { "line": "%line" }
+                    </pattern>
+                </pattern>
+
+
+                <!-- nível -->
+                <logLevel/>      <!-- fieldName padrão: level -->
+
+                <!-- logger -->
+                <loggerName/>    <!-- fieldName padrão: logger_name -->
+
+                <!-- thread -->
+                <threadName/>    <!-- fieldName padrão: thread_name -->
+
+                <!--                <message/>-->
+
+
+                <!-- MDC (correlation_id, dd.trace_id, dd.span_id, etc.) -->
+                <mdc/>
+
+                <!-- nome da aplicação (service) -->
+
+                <context/>
+
+                <logstashMarkers/>
+
+                <callerData/>
+
+                <stackTrace/>
             </providers>
         </encoder>
     </appender>

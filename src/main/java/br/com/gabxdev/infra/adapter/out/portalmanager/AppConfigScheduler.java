@@ -1,4 +1,4 @@
-package br.com.gabxdev.infra.sqs;
+package br.com.gabxdev.infra.adapter.out.portalmanager;
 
 import br.com.gabxdev.domain.ports.out.PollerConfigPort;
 import br.com.gabxdev.infra.sqs.listener.SqsListener;
@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SqsPollerConfigScheduler {
+public class AppConfigScheduler {
+
     private final PollerConfigPort pollerConfigPort;
 
     private final SqsListener sqsListener;
@@ -18,9 +19,9 @@ public class SqsPollerConfigScheduler {
     @Scheduled(fixedRate = 30_000)
     public void checkPollerConfig() {
         try {
-            int desired = pollerConfigPort.getDesiredNumPollers();
+            var desired = pollerConfigPort.getDesiredNumPollers();
 
-            sqsListener.recriarPollerLoop(desired);
+            sqsListener.listenerConfigUpdate(desired.maxMessagesPerPoll(), desired.numPollers(), desired.backOff());
         } catch (Exception e) {
             log.error("Erro ao verificar/atualizar configuração de pollers SQS", e);
         }

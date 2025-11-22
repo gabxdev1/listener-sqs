@@ -20,6 +20,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+import static br.com.gabxdev.infra.utils.SleepUtils.sleep;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -35,8 +37,10 @@ public class ParallelSqsBatchProcessor implements SqsBatchProcessor {
         List<CompletableFuture<ProcessResult>> futures = new ArrayList<>(messages.size());
 
         for (Message msg : messages) {
-            CompletableFuture<ProcessResult> future =
-                    CompletableFuture.supplyAsync(() -> messageProcessor.process(msg), messageExecutor);
+            CompletableFuture<ProcessResult> future = CompletableFuture.supplyAsync(() -> messageProcessor.process(msg), messageExecutor);
+
+            sleep(props.getBackOff());
+
             futures.add(future);
         }
 
