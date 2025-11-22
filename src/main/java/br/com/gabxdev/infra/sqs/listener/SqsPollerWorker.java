@@ -33,9 +33,6 @@ public class SqsPollerWorker implements Runnable {
 
         while (props.isRunning() && !Thread.currentThread().isInterrupted()) {
             try {
-                log.info("MAX MESSAGES: {}", props.getMaxMessagesPerPoll());
-                log.info("BACK OFF: {}", props.getBackOff());
-
                 var request = ReceiveMessageRequest.builder()
                         .queueUrl(props.getQueueUrl())
                         .maxNumberOfMessages(props.getMaxMessagesPerPoll())
