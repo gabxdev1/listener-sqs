@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import static br.com.gabxdev.infra.utils.LogLevelUtil.updateRootLogLevel;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -21,9 +23,11 @@ public class AppConfigScheduler {
         try {
             var desired = pollerConfigPort.getDesiredNumPollers();
 
+            updateRootLogLevel(desired.logLevel());
+
             sqsListener.listenerConfigUpdate(desired.maxMessagesPerPoll(), desired.numPollers(), desired.backOff());
         } catch (Exception e) {
-            log.error("Erro ao verificar/atualizar configuração de pollers SQS", e);
+            log.error("Erro ao verificar/atualizar configuração da APP", e);
         }
     }
 }
