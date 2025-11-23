@@ -5,6 +5,8 @@
 
     <!-- Appender síncrono que escreve em stdout em JSON -->
     <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <immediateFlush>false</immediateFlush>
+
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <!-- timestamp -->
