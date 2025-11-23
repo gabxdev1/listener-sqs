@@ -43,11 +43,11 @@ public class SqsPollerWorker implements Runnable {
         log.info("Poller SQS finalizado: {}", name);
     }
 
-    @Trace(
-            operationName = "sqs.poller",
-            resourceName = "consumindo-mensagens-sqs",
-            measured = true
-    )
+//    @Trace(
+//            operationName = "sqs.poller",
+//            resourceName = "consumindo-mensagens-sqs",
+//            measured = true
+//    )
     private void pullMessages() {
         var request = ReceiveMessageRequest.builder()
                 .queueUrl(props.getQueueUrl())

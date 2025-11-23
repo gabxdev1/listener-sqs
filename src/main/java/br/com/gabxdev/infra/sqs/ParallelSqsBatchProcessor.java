@@ -6,6 +6,7 @@ import br.com.gabxdev.domain.ports.SqsMessageProcessor;
 import br.com.gabxdev.infra.properties.SqsListenerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -46,24 +47,26 @@ public class ParallelSqsBatchProcessor implements SqsBatchProcessor {
 
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
 
-        List<Message> mensagensProcessadasComSucesso = new ArrayList<>();
-
-        for (int i = 0; i < futures.size(); i++) {
-            ProcessResult result = futures.get(i).join();
-
-            if (result.isSuccess()) {
-                mensagensProcessadasComSucesso.add(messages.get(i));
-            }
-
-            if (!result.isSuccess()) {
-                mensagensProcessadasComSucesso.add(messages.get(i));
+//        List<Message> mensagensProcessadasComSucesso = new ArrayList<>();
+//
+//        for (int i = 0; i < futures.size(); i++) {
+//            ProcessResult result = futures.get(i).join();
+//
+//            if (result.isSuccess()) {
+//                mensagensProcessadasComSucesso.add(messages.get(i));
+//            }
+//
+//            if (!result.isSuccess()) {
+//                mensagensProcessadasComSucesso.add(messages.get(i));
 //                log.warn("Mensagem falhou e não será deletada. Ela será reentregue pelo SQS. body={}", messages.get(i).body(), result.getError());
-            }
-        }
+//            }
+//        }
 
-        if (!mensagensProcessadasComSucesso.isEmpty()) {
-            deleteBatch(mensagensProcessadasComSucesso);
-        }
+//        if (!mensagensProcessadasComSucesso.isEmpty()) {
+//            deleteBatch(mensagensProcessadasComSucesso);
+//        }
+
+        deleteBatch(messages);
     }
 
     private void deleteBatch(List<Message> messages) {

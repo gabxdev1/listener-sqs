@@ -22,12 +22,6 @@
                     </pattern>
                 </pattern>
 
-                <pattern>
-                    <pattern>
-                        { "line": "%line" }
-                    </pattern>
-                </pattern>
-
                 <!-- nível -->
                 <logLevel/>      <!-- fieldName padrão: level -->
 
@@ -36,6 +30,7 @@
 
                 <!-- thread -->
                 <threadName/>    <!-- fieldName padrão: thread_name -->
+
                 <mdc/>
 
                 <stackTrace/>

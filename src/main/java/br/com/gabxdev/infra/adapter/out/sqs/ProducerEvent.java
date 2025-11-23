@@ -33,6 +33,11 @@ public class ProducerEvent {
 //        Thread.startVirtualThread(this::send);
 //        Thread.startVirtualThread(this::send);
 //        Thread.startVirtualThread(this::send);
+//        Thread.startVirtualThread(this::send);
+//        Thread.startVirtualThread(this::send);
+//        Thread.startVirtualThread(this::send);
+//        Thread.startVirtualThread(this::send);
+//        Thread.startVirtualThread(this::send);
     }
 
 
@@ -51,7 +56,7 @@ public class ProducerEvent {
 
             sqsClient.sendMessage(request);
 
-            sleep(100);
+            sleep(40);
         }
 
     }

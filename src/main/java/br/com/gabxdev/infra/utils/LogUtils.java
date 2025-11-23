@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LogUtils {
 
-    private final JsonUtils jsonUtils;
-
     public String logger(String logCode, String logMessage) {
-        var log = LogPattern.logger(logCode, logMessage);
-
-        return jsonUtils.toJson(log);
+        return new StringBuilder("{")
+                .append("\"log_code\":\"").append(logCode).append("\",")
+                .append("\"message\":\"").append(logMessage).append("\"")
+                .append("}")
+                .toString();
     }
 }

@@ -36,11 +36,11 @@ public class AppConfigScheduler {
         }
     }
 
-    @Trace(
-            operationName = "app.config.check",
-            resourceName = "atualizar-configuracao-app",
-            measured = true
-    )
+//    @Trace(
+//            operationName = "app.config.check",
+//            resourceName = "atualizar-configuracao-app",
+//            measured = true
+//    )
     private void doCheckPollerConfig() {
         var desired = pollerConfigPort.getDesiredNumPollers();
         updateRootLogLevel(desired.logLevel());
