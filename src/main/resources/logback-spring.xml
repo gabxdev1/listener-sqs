@@ -21,6 +21,12 @@
                     </pattern>
                 </pattern>
 
+                <!--                <pattern>-->
+                <!--                    <pattern>-->
+                <!--                        { "message": "#tryJson{%message}" }-->
+                <!--                    </pattern>-->
+                <!--                </pattern>-->
+
                 <!-- mensagem (campo "message") -->
                 <message/>
 
