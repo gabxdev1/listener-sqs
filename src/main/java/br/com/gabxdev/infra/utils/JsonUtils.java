@@ -19,7 +19,7 @@ public class JsonUtils {
         }
     }
 
-    public String toJson(LogPattern log) {
+    public String toJson(Object log) {
         try {
             return objectMapper.writeValueAsString(log);
         } catch (JsonProcessingException e) {

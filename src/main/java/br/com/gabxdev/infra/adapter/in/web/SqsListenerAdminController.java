@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin/sqs-listener")
 public class SqsListenerAdminController implements PollerConfigPort {
 
-    private AppConfigDto appConfig;
+    private AppConfigDto appConfig = new AppConfigDto(0, 0, 0, "INFO");
 
     @PostMapping("/pollers")
     public ResponseEntity<Void> updatePollers(@RequestBody AppConfigDto appConfigDto) {

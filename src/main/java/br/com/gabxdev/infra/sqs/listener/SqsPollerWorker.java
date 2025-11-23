@@ -1,14 +1,12 @@
 package br.com.gabxdev.infra.sqs.listener;
 
-import br.com.gabxdev.infra.properties.SqsListenerProperties;
 import br.com.gabxdev.domain.ports.SqsBatchProcessor;
-import br.com.gabxdev.infra.utils.SleepUtils;
+import br.com.gabxdev.infra.properties.SqsListenerProperties;
+import datadog.trace.api.Trace;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static br.com.gabxdev.infra.utils.SleepUtils.sleep;
 
@@ -33,21 +31,7 @@ public class SqsPollerWorker implements Runnable {
 
         while (props.isRunning() && !Thread.currentThread().isInterrupted()) {
             try {
-                var request = ReceiveMessageRequest.builder()
-                        .queueUrl(props.getQueueUrl())
-                        .maxNumberOfMessages(props.getMaxMessagesPerPoll())
-                        .waitTimeSeconds(props.getWaitTimeSeconds())
-                        .visibilityTimeout(props.getVisibilityTimeoutSeconds())
-                        .build();
-
-                var response = sqsClient.receiveMessage(request);
-
-                var messages = response.messages();
-                if (messages.isEmpty()) {
-                    continue;
-                }
-
-                batchProcessor.processBatch(messages);
+                pullMessages();
             } catch (SdkException e) {
                 log.error("Erro AWS ao receber mensagens do SQS", e);
                 sleep(1000);
@@ -57,5 +41,29 @@ public class SqsPollerWorker implements Runnable {
             }
         }
         log.info("Poller SQS finalizado: {}", name);
+    }
+
+    @Trace(
+            operationName = "sqs.poller",
+            resourceName = "consumindo-mensagens-sqs",
+            measured = true
+    )
+    private void pullMessages() {
+        var request = ReceiveMessageRequest.builder()
+                .queueUrl(props.getQueueUrl())
+                .maxNumberOfMessages(props.getMaxMessagesPerPoll())
+                .waitTimeSeconds(props.getWaitTimeSeconds())
+                .visibilityTimeout(props.getVisibilityTimeoutSeconds())
+                .build();
+
+        var response = sqsClient.receiveMessage(request);
+
+        var messages = response.messages();
+
+        if (messages.isEmpty()) {
+            return;
+        }
+
+        batchProcessor.processBatch(messages);
     }
 }
