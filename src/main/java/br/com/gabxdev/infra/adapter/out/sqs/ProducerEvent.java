@@ -35,9 +35,6 @@ public class ProducerEvent {
 //        Thread.startVirtualThread(this::send);
 //        Thread.startVirtualThread(this::send);
 //        Thread.startVirtualThread(this::send);
-//        Thread.startVirtualThread(this::send);
-//        Thread.startVirtualThread(this::send);
-//        Thread.startVirtualThread(this::send);
     }
 
 
@@ -45,7 +42,7 @@ public class ProducerEvent {
         while (true) {
             var event = new ContratoEventConsumer(
                     UUID.randomUUID().toString(),
-                    "37048330",
+                    "04325001",
                     UUID.randomUUID().toString()
             );
 
@@ -56,7 +53,6 @@ public class ProducerEvent {
 
             sqsClient.sendMessage(request);
 
-            sleep(40);
         }
 
     }

@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties("sqs-contrato")
 public class SqsListenerProperties {
     private String queueUrl;
-    private int maxMessagesPerPoll = 10;
+    private int maxMessagesPerPoll = 1;
     private int waitTimeSeconds = 20;
     private int visibilityTimeoutSeconds = 80;
-    private int numPollers = 3;
+    private int numPollers = 1;
     private volatile boolean running = true;
-    private int backOff = 0;
+    private int backOff = 10000;
 }

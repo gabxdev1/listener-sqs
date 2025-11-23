@@ -22,7 +22,7 @@ public class AppConfigScheduler {
 
     private final SqsListener sqsListener;
 
-    @Scheduled(fixedRate = 30_000)
+    @Scheduled(fixedRate = 10_000)
     public void checkPollerConfig() {
         try {
             MDC.put("correlation_id", UUID.randomUUID().toString());
