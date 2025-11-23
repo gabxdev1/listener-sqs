@@ -10,7 +10,5 @@ import org.springframework.context.annotation.Configuration;
 public class BrasilApiProperties {
     private String baseUrl;
     private int connectTimeoutMs;
-    private int readTimeoutMs;
-    private int maxConnTotal;
-    private int maxConnPerRoute;
+    private int responseTimeoutMs;
 }

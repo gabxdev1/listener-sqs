@@ -25,14 +25,27 @@ public class BrasilApiInterceptor implements ClientHttpRequestInterceptor {
         ClientHttpResponse response = execution.execute(request, body);
         var elapsed = System.currentTimeMillis();
 
-        log.info(
-                "Brasil api response | {} {} | status={} | time={}ms | headers={}",
-                request.getMethod(),
-                request.getURI(),
-                response.getStatusCode(),
-                (elapsed - start),
-                response.getHeaders()
-        );
+        if (response.getStatusCode().is2xxSuccessful()) {
+            log.info(
+                    "Brasil api response | {} {} | status={} | time={}ms | headers={}",
+                    request.getMethod(),
+                    request.getURI(),
+                    response.getStatusCode(),
+                    (elapsed - start),
+                    response.getHeaders()
+            );
+        }
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            log.error(
+                    "Brasil API - ERROR | {} {} | status={} | time={}ms | headers={}",
+                    request.getMethod(),
+                    request.getURI(),
+                    response.getStatusCode(),
+                    (elapsed - start),
+                    response.getHeaders()
+            );
+        }
 
         return response;
     }

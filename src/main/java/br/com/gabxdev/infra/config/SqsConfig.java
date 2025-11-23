@@ -1,6 +1,5 @@
 package br.com.gabxdev.infra.config;
 
-import br.com.gabxdev.infra.properties.SqsListenerProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

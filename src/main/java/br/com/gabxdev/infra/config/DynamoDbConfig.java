@@ -18,7 +18,7 @@ public class DynamoDbConfig {
     public DynamoDbClient dynamoDbClient() {
         return DynamoDbClient.builder()
                 .region(Region.SA_EAST_1)
-                .credentialsProvider(DefaultCredentialsProvider.create())
+                .credentialsProvider(DefaultCredentialsProvider.builder().build())
                 .httpClientBuilder(
                         ApacheHttpClient.builder()
                                 .maxConnections(256)
