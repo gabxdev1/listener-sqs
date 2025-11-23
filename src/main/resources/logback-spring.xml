@@ -6,9 +6,6 @@
     <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
-
-                <!-- timestamp -->
-                <!-- timestamp -->
                 <timestamp>
                     <timeZone>UTC</timeZone>
                 </timestamp>
@@ -31,7 +28,6 @@
                     </pattern>
                 </pattern>
 
-
                 <!-- nível -->
                 <logLevel/>      <!-- fieldName padrão: level -->
 
@@ -40,20 +36,7 @@
 
                 <!-- thread -->
                 <threadName/>    <!-- fieldName padrão: thread_name -->
-
-                <!--                <message/>-->
-
-
-                <!-- MDC (correlation_id, dd.trace_id, dd.span_id, etc.) -->
                 <mdc/>
-
-                <!-- nome da aplicação (service) -->
-
-                <context/>
-
-                <logstashMarkers/>
-
-                <callerData/>
 
                 <stackTrace/>
             </providers>
