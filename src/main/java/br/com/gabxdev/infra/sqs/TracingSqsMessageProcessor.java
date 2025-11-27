@@ -3,6 +3,7 @@ package br.com.gabxdev.infra.sqs;
 import br.com.gabxdev.domain.model.ProcessResult;
 import br.com.gabxdev.domain.ports.SqsMessageProcessor;
 import br.com.gabxdev.infra.adapter.in.sqs.SqsController;
+import br.com.gabxdev.infra.metrics.Metrics;
 import datadog.trace.api.Trace;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ import java.util.UUID;
 public class TracingSqsMessageProcessor implements SqsMessageProcessor {
 
     private final SqsController consumer;
+
+    private final Metrics metrics;
 
     @Override
     public ProcessResult process(Message message) {
@@ -45,7 +48,17 @@ public class TracingSqsMessageProcessor implements SqsMessageProcessor {
             measured = true
     )
     private void doProcessMessage(Message message) {
-        consumer.consume(message);
+        metrics.incrementEventosRecebidos();
+
+        try {
+            consumer.consume(message);
+
+            metrics.incrementProcessadoSucesso();
+        } catch (Exception e) {
+            metrics.incrementProcessadoErro();
+
+            throw e;
+        }
     }
 
     private String extractCorrelationId(Message message) {
