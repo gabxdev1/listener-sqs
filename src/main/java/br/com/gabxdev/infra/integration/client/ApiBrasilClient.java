@@ -22,7 +22,8 @@ public class ApiBrasilClient {
     public EnderecoGetResponse buscarEndereco(String cep) {
 
         try {
-            return brasilApiRestClient.get()
+            return brasilApiRestClient
+                    .get()
                     .uri("/{cep}", cep)
                     .retrieve()
                     .body(EnderecoGetResponse.class);

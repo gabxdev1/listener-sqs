@@ -1,7 +1,6 @@
 package br.com.gabxdev.infra.integration.client;
 
 
-import br.com.gabxdev.infra.config.ApiBrasilConfig;
 import br.com.gabxdev.infra.dto.EnderecoGetResponse;
 import br.com.gabxdev.infra.integration.interceptors.BrasilApiInterceptor;
 import br.com.gabxdev.infra.properties.BrasilApiProperties;
@@ -9,11 +8,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.ExpectedCount;
@@ -22,13 +22,28 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.client.response.MockRestResponseCreators;
 import org.springframework.web.client.RestClient;
 
-@RestClientTest({
-        ApiBrasilClient.class,
-        ApiBrasilConfig.class,
+@RestClientTest(value = ApiBrasilClient.class)
+@Import({
         BrasilApiProperties.class,
-        BrasilApiInterceptor.class
+        ApiBrasilClientTest.TestConfig.class,
+        BrasilApiInterceptor.class,
 })
 class ApiBrasilClientTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public RestClient brasilApiRestClient(
+                BrasilApiInterceptor brasilApiInterceptor,
+                BrasilApiProperties props,
+                RestClient.Builder restClientBuilder
+        ) {
+            return restClientBuilder
+                    .baseUrl(props.getBaseUrl())
+                    .requestInterceptor(brasilApiInterceptor)
+                    .build();
+        }
+    }
 
     @Autowired
     private ApiBrasilClient apiBrasilClient;
@@ -42,22 +57,13 @@ class ApiBrasilClientTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    @Qualifier("brasilApiClient")
-    private RestClient.Builder brasilApiRestClient;
-
-    @BeforeEach
-    void setUp() {
-        server = MockRestServiceServer.bindTo(brasilApiRestClient).build();
-    }
-
     @AfterEach
     void reset() {
         server.reset();
     }
 
     @Test
-    void contextLoads() throws JsonProcessingException {
+    void testSuccess() throws JsonProcessingException {
 
         var response = new EnderecoGetResponse(
                 "Test Street",

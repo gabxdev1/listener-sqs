@@ -1,7 +1,6 @@
 package br.com.gabxdev.infra.config;
 
 import br.com.gabxdev.infra.integration.interceptors.BrasilApiInterceptor;
-import br.com.gabxdev.infra.integration.interceptors.TestBrasilApiInterceptor;
 import br.com.gabxdev.infra.properties.BrasilApiProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,48 +18,24 @@ import java.time.Duration;
 @Slf4j
 public class ApiBrasilConfig {
 
-    private final BrasilApiProperties props;
-
-
     @Bean
     public RestClient brasilApiRestClient(
             BrasilApiInterceptor brasilApiInterceptor,
-            RestClient.Builder builder
+            BrasilApiProperties props,
+            RestClient.Builder restClientBuilder
     ) {
-        RestClient.Builder clientClone = builder.clone();
-
         ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
                 .withConnectTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
                 .withReadTimeout(Duration.ofMillis(props.getResponseTimeoutMs()));
 
         ClientHttpRequestFactory factory = ClientHttpRequestFactoryBuilder.detect().build(settings);
 
-        return clientClone
+        return restClientBuilder
+                .clone()
                 .requestFactory(factory)
                 .baseUrl(props.getBaseUrl())
                 .requestInterceptor(brasilApiInterceptor)
                 .build();
-
     }
 
-    @Bean
-    public RestClient sPApiRestClient(
-            TestBrasilApiInterceptor testBrasilApiInterceptor,
-            RestClient.Builder builder
-    ) {
-        RestClient.Builder clientSpClone = builder.clone();
-
-        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
-                .withConnectTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
-                .withReadTimeout(Duration.ofMillis(props.getResponseTimeoutMs()));
-
-        ClientHttpRequestFactory factory = ClientHttpRequestFactoryBuilder.detect().build(settings);
-
-        return clientSpClone
-                .requestFactory(factory)
-                .baseUrl(props.getBaseUrl())
-                .requestInterceptor(testBrasilApiInterceptor)
-                .build();
-
-    }
 }
