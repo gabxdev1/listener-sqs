@@ -13,8 +13,8 @@ import java.net.SocketTimeoutException;
 import java.net.http.HttpTimeoutException;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class ApiBrasilClient {
 
     private final RestClient brasilApiRestClient;

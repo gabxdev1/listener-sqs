@@ -1,6 +1,7 @@
 package br.com.gabxdev.infra.config;
 
 import br.com.gabxdev.infra.integration.interceptors.BrasilApiInterceptor;
+import br.com.gabxdev.infra.integration.interceptors.TestBrasilApiInterceptor;
 import br.com.gabxdev.infra.properties.BrasilApiProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,55 +21,46 @@ public class ApiBrasilConfig {
 
     private final BrasilApiProperties props;
 
-    @Bean
-    public RestClient.Builder restClientBuilder() {
-        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
-                .withConnectTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
-                .withReadTimeout(Duration.ofMillis(props.getResponseTimeoutMs()));
-
-        ClientHttpRequestFactory factory =
-                ClientHttpRequestFactoryBuilder.detect().build(settings);
-
-
-        return RestClient.builder()
-                .requestFactory(factory);
-//                .defaultStatusHandler(
-//                        HttpStatusCode::is4xxClientError,
-//                        (request, response) -> {
-//                            response.getBody();
-//                            String body = new String(response.getBody().readAllBytes());
-//
-//                            log.error("API - BRASIL -  Erro 4xx: {} body={}", response.getStatusCode(), body);
-//
-//                            throw new ExternalClientException(
-//                                    "API - BRASIL -  Erro 4xx: " + response.getStatusCode() + " body=" + body
-//                            );
-//                        }
-//                )
-//                .defaultStatusHandler(
-//                        HttpStatusCode::is5xxServerError,
-//                        (request, response) -> {
-//                            response.getBody();
-//                            String body = new String(response.getBody().readAllBytes());
-//
-//                            log.error("API - BRASIL -  Erro 5xx: {} body={}", response.getStatusCode(), body);
-//
-//                            throw new ExternalServerException(
-//                                    "API - BRASIL -  Erro 5xx: " + response.getStatusCode() + " body=" + body
-//                            );
-//                        }
-//                );
-    }
-
 
     @Bean
     public RestClient brasilApiRestClient(
             BrasilApiInterceptor brasilApiInterceptor,
-            RestClient.Builder restClientBuilder
+            RestClient.Builder builder
     ) {
-        return restClientBuilder
+        RestClient.Builder clientClone = builder.clone();
+
+        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+                .withConnectTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
+                .withReadTimeout(Duration.ofMillis(props.getResponseTimeoutMs()));
+
+        ClientHttpRequestFactory factory = ClientHttpRequestFactoryBuilder.detect().build(settings);
+
+        return clientClone
+                .requestFactory(factory)
                 .baseUrl(props.getBaseUrl())
                 .requestInterceptor(brasilApiInterceptor)
                 .build();
+
+    }
+
+    @Bean
+    public RestClient sPApiRestClient(
+            TestBrasilApiInterceptor testBrasilApiInterceptor,
+            RestClient.Builder builder
+    ) {
+        RestClient.Builder clientSpClone = builder.clone();
+
+        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+                .withConnectTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
+                .withReadTimeout(Duration.ofMillis(props.getResponseTimeoutMs()));
+
+        ClientHttpRequestFactory factory = ClientHttpRequestFactoryBuilder.detect().build(settings);
+
+        return clientSpClone
+                .requestFactory(factory)
+                .baseUrl(props.getBaseUrl())
+                .requestInterceptor(testBrasilApiInterceptor)
+                .build();
+
     }
 }
