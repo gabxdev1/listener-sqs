@@ -1,28 +1,45 @@
-# Dockerfile
-FROM eclipse-temurin:21-jre as base
+# =========================
+# Stage 1 - build nativo
+# =========================
+FROM ghcr.io/graalvm/native-image-community:21 AS build
+WORKDIR /workspace
+
+RUN microdnf install -y gzip tar findutils
+
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+COPY pom.xml .
+COPY .mvn .mvn
+COPY mvnw .
+RUN chmod +x mvnw
+
+# cache de dependências
+RUN ./mvnw -q -DskipTests dependency:go-offline
+
+COPY src src
+
+# baixa o tracer do Datadog para ser usado no build nativo
+ADD https://dtdg.co/latest-java-tracer /workspace/dd-java-agent.jar
+
+# gera o binário nativo
+RUN ./mvnw -e -X clean -Pnative native:compile -Dmaven.test.skip=true
+
+# debug opcional
+RUN ls -lah /workspace/target
+
+# =========================
+# Stage 2 - runtime mínimo
+# =========================
+FROM debian:bookworm-slim
 WORKDIR /app
 
-ADD https://dtdg.co/latest-java-tracer dd-java-agent.jar
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY target/listener-sqs-0.0.1-SNAPSHOT.jar app.jar
-
-ENV DD_SERVICE=listener-sqs \
-    DD_ENV=dev \
-    DD_VERSION=1.0.0 \
-    DD_AGENT_HOST=dd-agent \
-    DD_TRACE_AGENT_PORT=8126 \
-    DD_LOGS_INJECTION=true \
-    DD_PROFILING_ENABLED=true \
-    DD_PROFILING_ALLOCATION_ENABLED=true \
-    DD_PROFILING_EXCEPTION_ENABLED=true \
-    DD_LOGS_CONFIG_AUTO_MULTI_LINE_DETECTION=true \
-    DD_ANALYTICS_ENABLED=true \
-    DDD_TRACE_SAMPLING_RULES='[{"sample_rate": 1.0}]' \
-    DD_TRACE_SAMPLE_RATE=1.0 \
-    DD_TRACE_RATE_LIMIT=100000 \
-    DD_TRACE_AGENT_MAX_PAYLOAD_SIZE=10485760
+COPY --from=build /workspace/target/app /app/app
+RUN ls -lah /app
+RUN chmod +x /app/app
 
 EXPOSE 8080
-ENTRYPOINT ["sh","-c","java $JAVA_TOOL_OPTIONS -jar app.jar"]
 
-#  docker run -d --name dd-agent -p 8126:8126 -e DD_API_KEY= -e DD_SITE="" -e DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true -e DD_APM_ENABLED=true -e DD_APM_NON_LOCAL_TRAFFIC=true -e DD_APM_RECEIVER_SOCKET=/var/run/datadog/apm.socket -e DD_DOGSTATSD_SOCKET=/var/run/datadog/dsd.socket -v /var/run/datadog:/var/run/datadog  -e DD_LOGS_ENABLED=true  -e DD_LOGS_CONFIG_AUTO_MULTI_LINE_DETECTION=true -e DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true -e DD_CONTAINER_EXCLUDE_LOGS="name:dd-agent"  -v /opt/datadog-agent/run:/opt/datadog-agent/run:rw  -v /var/run/docker.sock:/var/run/docker.sock:ro  -v /proc/:/host/proc/:ro  -v /sys/fs/cgroup/:/host/sys/fs/cgroup:ro  -v /var/lib/docker/containers:/var/lib/docker/containers:ro  gcr.io/datadoghq/agent:7
+ENTRYPOINT ["/app/app"]
