@@ -5,7 +5,10 @@ import br.com.gabxdev.domain.exceptions.ExternalTimeoutException;
 import br.com.gabxdev.infra.dto.EnderecoGetResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
@@ -19,6 +22,18 @@ public class ApiBrasilClient {
 
     private final RestClient brasilApiRestClient;
 
+    @Retryable(
+            retryFor = Exception.class,
+            noRetryFor = {
+                    IllegalArgumentException.class,
+                    HttpClientErrorException.BadRequest.class,
+                    HttpClientErrorException.Unauthorized.class,
+                    HttpClientErrorException.Forbidden.class,
+                    HttpClientErrorException.NotFound.class
+            },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 500, multiplier = 2.0)
+    )
     public EnderecoGetResponse buscarEndereco(String cep) {
 
         try {
